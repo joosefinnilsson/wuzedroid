@@ -1,0 +1,221 @@
+#!/bin/bash
+############################################################################
+#### Copyright (C) 2018 wuseman <info@sendit.nu>
+####
+#### Desc:    Control ADB from cli
+####          tested on Gentoo
+#### Author:  wuseman
+#### Contact: info@sendit.nu
+####
+#### This file is free software; as a special exception the author gives
+#### unlimited permission to copy and/or distribute it, with or without
+#### modifications, as long as this notice is preserved.
+#############################################################################
+
+r='\e[1;34m'
+g='\e[1;32m'
+y='\e[1;33m'
+b='\e[1;34m'
+c='\e[1;36m'
+w='\e[0;32m'
+e='\e[0m'
+red=`tput setaf 1`
+green=`tput setaf 2`
+reset=`tput sgr0`
+RED=''
+NC='\033[0m' # No Color
+
+if [[ $EUID -ne 0 ]]; then
+  echo -e "\nYou must be Administrator to run this script\n" 2>&1
+  exit 1
+else
+
+# Gentoo 
+# Todo: Add more later but since we develop on 
+# a gentoo machine lets stay here for now..
+if ! [ -x "$(command -v adb)" ]; then
+ echo "Error: You miss 'dev-util/android-tool'" >&2
+ exit 0
+fi
+
+if [ "$1" == "--help" ] ; then
+    echo "Usage: `basename $0` [-h]"
+    exit 0
+ fi
+fi
+
+#Error: You miss 'dev-util/android-tool'
+
+clear
+echo
+echo -e $r"  |-|                                                              "$e
+echo -e $r"  |_|                                                              "$e
+echo -e $r"  /_\    \ | /                                                     "$e
+echo -e $r".-|||------.----.                                                  "$e
+echo -e $r"|          U    |                                                  "$e
+echo -e $r"|               |                                                  "$e
+echo -e $r"| ====o======== |                                                  "$e
+echo -e $r"| ============= |                                                  "$e
+echo -e $r"|               |                                                  "$e
+echo -e $r"|_______________|                                                  "$e
+echo -e $r"| ________GF337 |                                                  "$e
+echo -e $r"||   wuseman   ||                             _           _     _  "$e
+echo -e $r"||             ||          version 1.0-beta  | |         (_)   | | "$e
+echo -e $r"||_____________|| __      ___   _ _______  __| |_ __ ___  _  __| | "$e
+echo -e $r"|___---------___| \ \ /\ / / | | |_  / _ \/ _  |  __/ _ \| |/ _  | "$e
+echo -e $r"|---------------|  \ V  V /| |_| |/ /  __/ (_| | | | (_) | | (_| | "$e
+echo -e $r"|[Yes][(|)][ No]|   \_/\_/  \__,_/___\___|\__,_|_|  \___/|_|\__,_| "$e
+echo -e $r"| ___  ___  ___ |                                                  "$e
+echo -e $r"|[<-'][CLR][.->]|    Copyright (C) 2018 wuseman <info@sendit.nu>   "$e
+echo -e $r"| ___  ___  ___ |                                                  "$e
+echo -e $r"|[1__][2__][3__]|           Desc:    Control ADB from cli          "$e
+echo -e $r"| ___  ___  ___ |           Author:  wuseman                       "$e
+echo -e $r"|[4__][5__][6__]|           Contact: info@sendit.nu                "$e
+echo -e $r"| ___  ___  ___ |                                                  "$e
+echo -e $r"|[7__][8__][9__]|                                                  "$e
+echo -e $r"| ___  ___  ___ |                                                  "$e
+echo -e $r"|[*__][0__][#__]|                                                  "$e
+echo -e $r"(_______________)                                                  "$e
+echo
+echo -e $r"-------------------------------------------------------------------\n"$e
+
+
+OPTION='Please enter your choice from below list: '
+options=("Start adb-server"
+         "Kill adb-server"
+         "Reboot my device"
+         "Enter shell"
+         "Restart USB mode"
+         "Restart WIFI mode"
+         ""
+         "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+
+          "Start adb-server")
+           if pidof -x "adb" >/dev/null; then
+           echo >&2 '
+           It seems adb is already running'
+         else
+          echo >&2 '
+         '
+
+           abort()
+          {
+          echo >&2 '
+          ***************
+          *** ABORTED ***
+          ***************
+          '
+          echo "An error occurred. Exiting..." >&2
+          exit 1
+          }
+
+         trap 'abort' 0
+
+         set -e
+
+         # Add your script below....
+         # If an error occurs, the abort() function will be called.
+         #----------------------------------------------------------
+         adb start-server
+         trap : 0
+         echo >&2 '
+          [`DONE`] : Sucessfully started adb, listening on 5037
+         '
+         fi
+         ;;
+
+
+          "Kill adb-server")
+           ### START ADB SERVER
+           if pidof -x "add ps aux here plz" >/dev/null; then
+           echo >&2 '
+                  ADB Is not running '
+         else
+          echo >&2 '
+         '
+
+           abort()
+          {
+          echo >&2 '
+          ***************
+          *** ABORTED ***
+          ***************
+          '
+          echo "An error occurred. Exiting..." >&2
+          exit 1
+          }
+
+         trap 'abort' 0
+
+         set -e
+
+         adb kill-server
+         trap : 0
+         echo >&2 '
+         [`DONE`] : Sucessfully killed adb
+         '
+         fi
+           ;;
+
+
+          "Reboot my device")
+choice=" "
+
+while [ "$choice" != "q" ]
+do
+        echo
+        echo "1) Reboot system as Normal"
+        echo "2) Reboot to Bootloader (fasbtoot)"
+        echo "3) Reboot to Recovery Mode"
+        echo "q) Quit"
+        echo
+
+        read choice
+
+        case $choice in
+            '1')
+             adb reboot
+             echo "Rebooting your device as normal"
+             ;;
+            '2')
+           echo "Rebooting your device into bootloader"
+           adb reboot bootloader
+            ;;
+
+            '3')
+           echo "Rebooting your device into recovery mode"
+           echo "Use 'fastboot' instead of adb in recovery mode.."
+           adb reboot recovery
+             ;;
+
+
+            'q') echo "Ok, quiting....";;
+            *)   echo "menu item is not available; try again!";;
+        esac
+done
+
+exit 0
+;;
+
+                       "Enter shell")
+                       echo -e "\nTrying to enter your device terminal...\n"
+                       adb shell 'su -c echo -e "Connection works fine: yes/no"'
+                       read -p "Want me to connect for real: " yesno
+                       case $yesno in
+                       yes) adb shell;;
+                       no) exit 0;;
+                       esac
+                       ;;
+
+                      "Restart USB mode")
+                      adb usb
+                      ;;
+
+                      "Restart WIFI mode")
+                      adb wifi
+                      ;;
+    esac
+done
